@@ -18,7 +18,7 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
     api = hass.data[DOMAIN]["api"]
 
     cameras = []
-    _LOGGER.info("Adding temperature sensors")
+    _LOGGER.info("Adding nest camerass")
     for camera in api["cameras"]:
         _LOGGER.info(f"Adding nest camera uuid: {camera}")
         cameras.append(NestCamera(camera, api))
@@ -64,7 +64,6 @@ class NestCamera(Camera):
 
     @property
     def is_recording(self):
-        return True
         """Return true if the device is recording."""
         return self._device.device_data[self._uuid]["is_streaming"]
 
