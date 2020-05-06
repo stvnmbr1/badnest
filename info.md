@@ -24,10 +24,6 @@ This isn't an advertised or public API, it's still better than web scraping, but
 
 ## Configuration
 
-The camera's region is one of `us` or `eu` depending on your region.
-If you're not in the US or EU, you should be able to add your
-two-character country code, and it should work.
-
 ### Example configuration.yaml - When you're not using the Google Auth Login
 
 Google recently introduced reCAPTCHA when logging to Nest. That means username
@@ -41,7 +37,6 @@ You will find `user_id` and `access_token` in the response to the request.
 badnest:
   user_id: 11111
   access_token: !secret nest_access_token
-  region: us
 
 climate:
   - platform: badnest
@@ -60,7 +55,6 @@ sensor:
 badnest:
   issue_token: "https://accounts.google.com/o/oauth2/iframerpc....."
   cookie: "OCAK=......"
-  region: us
 
 climate:
   - platform: badnest
