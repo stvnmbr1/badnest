@@ -43,6 +43,15 @@ async def async_setup_platform(hass,
 
     async_add_entities(protect_sensors)
 
+    camera_event_sensors = []
+    _LOGGER.info("Adding nest camera event sensors")
+    for sensor in api["cameras"]:
+        _LOGGER.info(f"Adding nest camera event sensor uuid: {sensor}")
+        for sensor_type in PROTECT_SENSOR_TYPES:
+            camera_event_sensors.append(NestCameraEventSensor(sensor, api))
+
+    async_add_entities(camera_event_sensors)
+
 
 class NestTemperatureSensor(Entity):
     """Implementation of the Nest Temperature Sensor."""
@@ -117,6 +126,42 @@ class NestProtectSensor(Entity):
     def state(self):
         """Return the state of the sensor."""
         return self.device.device_data[self.device_id][self._sensor_type]
+
+    def update(self):
+        """Get the latest data from the Protect and updates the states."""
+        self.device.update()
+
+
+class NestCameraEventSensor(Entity):
+    """Implementation of Nest Camera Event Sensor"""
+
+    def __init__(self, device_id, api):
+        """Initialize the sensor."""
+        self._name = "Nest Event Sensor"
+        self.device_id = device_id
+        self.device = api
+
+    @property
+    def unique_id(self):
+        """Return an unique ID."""
+        return self.device_id
+
+    @property
+    def state(self):
+        """Return the state of the sensor."""
+        try:
+            return self.device.device_data[self.device_id]["events"][0]["start_time"]
+        except (IndexError, TypeError):
+            return None
+
+    @property
+    def name(self):
+        """Return the name of the sensor."""
+        return self.device.device_data[self.device_id]["name"] + " Events"
+
+    @property
+    def device_state_attributes(self):
+        return {"Events": self.device.device_data[self.device_id]["events"]}
 
     def update(self):
         """Get the latest data from the Protect and updates the states."""

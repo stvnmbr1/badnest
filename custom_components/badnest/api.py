@@ -1,6 +1,7 @@
 import logging
 
 import requests
+import time
 
 API_URL = "https://home.nest.com"
 CAMERA_WEBAPI_BASE = "https://webapi.camera.home.nest.com"
@@ -175,8 +176,32 @@ class NestAPI:
         else:
             return "Unknown"
 
-    def update(self):
+    def update(self, count=0):
+        count += 1
+
         try:
+            # get camera updates
+            for camera in self.cameras:
+                current_timestamp = int(time.time())
+                start_timestamp = current_timestamp - 60 * 60
+                r = self._session.get(
+                    f"https://{self.device_data[camera]['nexus_api_nest_domain_host']}/cuepoint/{camera}/2?start_time={start_timestamp}&_={current_timestamp}"
+                )
+                if r.status_code == 200:
+                    events = list()
+                    for e in r.json():
+                        if e["is_important"]:
+                            events.append(
+                                {
+                                    "start_time": e["start_time"],
+                                    "end_time": e["end_time"],
+                                    "in_progress": e["in_progress"],
+                                    "types": e["types"],
+                                    "face_name": e["face_name"],
+                                }
+                            )
+                    self.device_data[camera]["events"] = events
+
             # To get friendly names
             r = self._session.post(
                 f"{API_URL}/api/0.1/user/{self._user_id}/app_launch",
@@ -305,11 +330,13 @@ class NestAPI:
         except requests.exceptions.RequestException as e:
             _LOGGER.error(e)
             _LOGGER.error("Failed to update, trying again")
-            self.update()
+            if count < 3:
+                self.update(count)
         except KeyError:
             _LOGGER.error("Failed to update, trying to log in again")
             self.login()
-            self.update()
+            if count < 3:
+                self.update(count)
 
     def thermostat_set_temperature(self, device_id, temp, temp_high=None):
         if device_id not in self.thermostats:
