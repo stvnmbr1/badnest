@@ -96,13 +96,17 @@ class NestAPI:
         self._session.headers.update(
             {"Authorization": f"Basic {self._access_token}",}
         )
+        _LOGGER.debug("Logged into badnest with Google Auth")
 
     def _login_dropcam(self):
         self._session.post(
-            f"{API_URL}/dropcam/api/login", data={"access_token": self._access_token}
+            f"{API_URL}/dropcam/
+            api/login", data={"access_token": self._access_token}
         )
+        _LOGGER.debug("Logged into badnest dropcam")
 
-    def _get_cameras(self):
+    def _get_cameras(self, count=0):
+        count += 1
         cameras = []
 
         try:
@@ -116,19 +120,26 @@ class NestAPI:
                 camera["battery_voltage"] = camera["rq_battery_battery_volt"]
                 camera["ac_voltage"] = camera["rq_battery_vbridge_volt"]
                 camera["data_tier"] = camera["properties"]["streaming.data-usage-tier"]
+                camera["events"] = list()
                 self.device_data[camera["uuid"]] = camera
+
+            _LOGGER.debug(f"Found {len(cameras)}" cameras)
 
             return cameras
         except requests.exceptions.RequestException as e:
             _LOGGER.error(e)
-            _LOGGER.error("Failed to get cameras, trying again")
-            return self._get_cameras()
-        except KeyError:
-            _LOGGER.debug("Failed to get cameras, trying to log in again")
-            self.login()
-            return self._get_cameras()
+            if count < 3:
+                _LOGGER.error("Failed to get cameras, trying again (max 3 attempts)")
+                return self._get_cameras(count)
 
-    def _get_devices(self):
+        except KeyError:
+            if count < 3:
+                _LOGGER.debug("Failed to get cameras, trying to log in again (max 3 attempts)")
+                self.login()
+                return self._get_cameras(count)
+
+    def _get_devices(self, count=0):
+        count += 1
         try:
             r = self._session.post(
                 f"{API_URL}/api/0.1/user/{self._user_id}/app_launch",
@@ -159,12 +170,14 @@ class NestAPI:
 
         except requests.exceptions.RequestException as e:
             _LOGGER.error(e)
-            _LOGGER.error("Failed to get devices, trying again")
-            return self._get_devices()
+            if count < 3:
+                _LOGGER.error("Failed to get devices, trying again")
+                return self._get_devices(count)
         except KeyError:
-            _LOGGER.debug("Failed to get devices, trying to log in again")
-            self.login()
-            return self._get_devices()
+            if count < 3:
+                _LOGGER.debug("Failed to get devices, trying to log in again")
+                self.login()
+                return self._get_devices(count)
 
     def _map_nest_protect_state(self, value):
         if value == 0:
@@ -200,7 +213,11 @@ class NestAPI:
                                     "face_name": e["face_name"],
                                 }
                             )
+                    _LOGGER.debug(f"Was able to get {len(events)} events")
                     self.device_data[camera]["events"] = events
+                else:
+                    _LOGGER.error(f"Getting camera events failed")
+                    self.device_data[camera]["events"] = list()
 
             # To get friendly names
             r = self._session.post(
@@ -329,13 +346,13 @@ class NestAPI:
                     self.device_data[sn]["battery_level"] = sensor_data["battery_level"]
         except requests.exceptions.RequestException as e:
             _LOGGER.error(e)
-            _LOGGER.error("Failed to update, trying again")
             if count < 3:
+                _LOGGER.error("Failed to update, trying again")
                 self.update(count)
         except KeyError:
-            _LOGGER.error("Failed to update, trying to log in again")
-            self.login()
             if count < 3:
+                _LOGGER.error("Failed to update, trying to log in again")
+                self.login()
                 self.update(count)
 
     def thermostat_set_temperature(self, device_id, temp, temp_high=None):
