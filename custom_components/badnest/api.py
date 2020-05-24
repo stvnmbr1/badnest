@@ -98,8 +98,7 @@ class NestAPI:
 
     def _login_dropcam(self):
         self._session.post(
-            f"{API_URL}/dropcam/
-            api/login", data={"access_token": self._access_token}
+            f"{API_URL}/dropcam/api/login", data={"access_token": self._access_token}
         )
         _LOGGER.debug("Logged into badnest dropcam")
 
