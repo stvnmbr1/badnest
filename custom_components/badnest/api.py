@@ -120,7 +120,7 @@ class NestAPI:
                 camera["events"] = list()
                 self.device_data[camera["uuid"]] = camera
 
-            _LOGGER.debug(f"Found {len(cameras)}" cameras)
+            _LOGGER.debug(f"Found {len(cameras)} cameras")
 
             return cameras
         except requests.exceptions.RequestException as e:
