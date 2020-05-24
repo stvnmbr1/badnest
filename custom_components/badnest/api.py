@@ -93,9 +93,7 @@ class NestAPI:
         r = self._session.post(url=URL_JWT, headers=headers, params=params)
         self._user_id = r.json()["claims"]["subject"]["nestId"]["id"]
         self._access_token = r.json()["jwt"]
-        self._session.headers.update(
-            {"Authorization": f"Basic {self._access_token}",}
-        )
+
         _LOGGER.debug("Logged into badnest with Google Auth")
 
     def _login_dropcam(self):
