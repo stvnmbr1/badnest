@@ -2,6 +2,11 @@
 
 A bad Nest integration that uses the web api to work after Works with Nest was shut down (bad Google, go sit in your corner and think about what you did)
 
+# Notes on this fork
+This fork does not support nest logins, only google logins. 
+I only have a single nest hello for testing but strive to ensure that multiple cameras work, and that other devices that work on the main repo work here too.
+This fork was created becuase it appears that PRs for camera fixes aren't being processed on teh main repo.
+
 ## Why is it bad
 
 This isn't an advertised or public API, it's still better than web scraping, but will never be as reliable as the original API
@@ -81,6 +86,10 @@ The values of `"issue_token"` and `"cookie"` are specific to your Google Account
 8. In the 'Filter' box, enter `oauth2/iframe`
 9. Several network calls will appear in the Dev Tools window. Click on the last `iframe` call.
 10. In the Headers tab, under Request Headers, copy the entire `cookie` (beginning `OCAK=...` - **include the whole string which is several lines long and has many field/value pairs** - do not include the `cookie:` name). This is your `"cookie"` in `configuration.yaml`.
+
+**Note on cookies** I have found i need the following 3 cookies: SID, LSID and \__Secure-3PSID
+To include these in your config, set coookie like
+`cookie: SID: xxxxxx; LSID: xxxxxx; \__Secure-3PSID: xxxxx`
 
 ## Notes
 
