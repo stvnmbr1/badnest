@@ -161,7 +161,14 @@ class NestCameraEventSensor(Entity):
 
     @property
     def device_state_attributes(self):
-        return {"Events": self.device.device_data[self.device_id]["events"]}
+        if len(self.device.device_data[self.device_id]["events"]):
+            last_event = self.device.device_data[self.device_id]["events"][-1]
+        else:
+            last_event = None
+        return {
+            "events": self.device.device_data[self.device_id]["events"],
+            "last_event": last_event
+            }
 
     def update(self):
         """Get the latest data from the Protect and updates the states."""
