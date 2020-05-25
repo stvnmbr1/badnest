@@ -93,7 +93,9 @@ class NestAPI:
         r = self._session.post(url=URL_JWT, headers=headers, params=params)
         self._user_id = r.json()["claims"]["subject"]["nestId"]["id"]
         self._access_token = r.json()["jwt"]
-
+        self._session.headers.update(
+            {"Authorization": f"Basic {self._access_token}",}
+        )
         _LOGGER.debug("Logged into badnest with Google Auth")
 
     def _login_dropcam(self):
@@ -194,7 +196,8 @@ class NestAPI:
                 current_timestamp = int(time.time())
                 start_timestamp = current_timestamp - 60 * 60
                 r = self._session.get(
-                    f"https://{self.device_data[camera]['nexus_api_nest_domain_host']}/cuepoint/{camera}/2?start_time={start_timestamp}&_={current_timestamp}"
+                    f"https://{self.device_data[camera]['nexus_api_nest_domain_host']}/cuepoint/{camera}/2?start_time={start_timestamp}&_={current_timestamp}",
+                    headers={"cookie": f"user_token={self._access_token}"},
                 )
                 if r.status_code == 200:
                     events = list()
@@ -542,6 +545,7 @@ class NestAPI:
             r = self._session.get(
                 f"https://{self.device_data[device_id]['nexus_api_nest_domain_host']}/get_image?uuid={device_id}"
                 + f"&cachebuster={now}",
+                headers={"cookie": f"user_token={self._access_token}"},
             )
             return r.content
         except requests.exceptions.RequestException as e:
