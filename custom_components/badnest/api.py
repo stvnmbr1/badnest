@@ -143,25 +143,24 @@ class NestAPI:
                 json={"known_bucket_types": ["buckets"], "known_bucket_versions": [],},
                 headers={"Authorization": f"Basic {self._access_token}"},
             )
-            if r.json()["message"] != "404 Not Found":
 
-                self._czfe_url = r.json()["service_urls"]["urls"]["czfe_url"]
+            self._czfe_url = r.json()["service_urls"]["urls"]["czfe_url"]
 
-                buckets = r.json()["updated_buckets"][0]["value"]["buckets"]
-                for bucket in buckets:
-                    if bucket.startswith("topaz."):
-                        sn = bucket.replace("topaz.", "")
-                        self.protects.append(sn)
-                        self.device_data[sn] = {}
-                    elif bucket.startswith("kryptonite."):
-                        sn = bucket.replace("kryptonite.", "")
-                        self.temperature_sensors.append(sn)
-                        self.device_data[sn] = {}
-                    elif bucket.startswith("device."):
-                        sn = bucket.replace("device.", "")
-                        self.thermostats.append(sn)
-                        self.temperature_sensors.append(sn)
-                        self.device_data[sn] = {}
+            buckets = r.json()["updated_buckets"][0]["value"]["buckets"]
+            for bucket in buckets:
+                if bucket.startswith("topaz."):
+                    sn = bucket.replace("topaz.", "")
+                    self.protects.append(sn)
+                    self.device_data[sn] = {}
+                elif bucket.startswith("kryptonite."):
+                    sn = bucket.replace("kryptonite.", "")
+                    self.temperature_sensors.append(sn)
+                    self.device_data[sn] = {}
+                elif bucket.startswith("device."):
+                    sn = bucket.replace("device.", "")
+                    self.thermostats.append(sn)
+                    self.temperature_sensors.append(sn)
+                    self.device_data[sn] = {}
 
             self.cameras = self._get_cameras()
 
@@ -222,8 +221,6 @@ class NestAPI:
                 json={"known_bucket_types": ["where"], "known_bucket_versions": [],},
                 headers={"Authorization": f"Basic {self._access_token}"},
             )
-            if r.json()["message"] == "404 Not Found":
-                return
 
             for bucket in r.json()["updated_buckets"]:
                 sensor_data = bucket["value"]
