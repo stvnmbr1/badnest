@@ -210,7 +210,19 @@ class NestCameraDetectionSensor(Entity):
             last_event = None
         return {
             "last_event": last_event,
-            "facename": self.device.device_data[self.device_id]["events"][-1]["types"][0]
+            "start_time": self.device.device_data[self.device_id]["events"][-1]["start_time"],
+            "end_time": self.device.device_data[self.device_id]["events"][-1]["end_time"],
+            "facename": self.device.device_data[self.device_id]["events"][-1]["face_name"]
+            "is_important": self.device.device_data[self.device_id]["events"][-1]["is_important"],
+            "importance": self.device.device_data[self.device_id]["events"][-1]["importance"],
+            "types": self.device.device_data[self.device_id]["events"][-1]["types"],
+            "type1": self.device.device_data[self.device_id]["events"][-1]["types"][0],
+            "type2": self.device.device_data[self.device_id]["events"][-1]["types"][1],
+            "type3": self.device.device_data[self.device_id]["events"][-1]["types"][2],
+            "zone_ids": self.device.device_data[self.device_id]["events"][-1]["zone_ids"],
+            "zone_ids1": self.device.device_data[self.device_id]["events"][-1]["zone_ids"][0],
+            "zone_ids2": self.device.device_data[self.device_id]["events"][-1]["zone_ids"][1],
+            "zone_ids3": self.device.device_data[self.device_id]["events"][-1]["zone_ids"][2],
             }
 
     def update(self):
