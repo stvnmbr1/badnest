@@ -173,3 +173,46 @@ class NestCameraEventSensor(Entity):
     def update(self):
         """Get the latest data from the Protect and updates the states."""
         self.device.update()
+
+   
+class NestCameraDetectionSensor(Entity):
+    """Implementation of Nest Camera Detection Sensor"""
+
+    def __init__(self, device_id, api):
+        """Initialize the sensor."""
+        self._name = "Nest Detection Sensor"
+        self.device_id = device_id
+        self.device = api
+
+    @property
+    def unique_id(self):
+        """Return an unique ID."""
+        return self.device_id
+
+    @property
+    def state(self):
+        """Return the state of the sensor."""
+        try:
+            return self.device.device_data[self.device_id]["events"][-1]["types"][0]
+        except (IndexError, TypeError):
+            return None
+
+    @property
+    def name(self):
+        """Return the name of the sensor."""
+        return self.device.device_data[self.device_id]["name"] + " Detection"
+
+    @property
+    def device_state_attributes(self):
+        if len(self.device.device_data[self.device_id]["events"]):
+            last_event = self.device.device_data[self.device_id]["events"][-1]
+        else:
+            last_event = None
+        return {
+            "last_event": last_event,
+            "facename": self.device.device_data[self.device_id]["events"][-1]["types"][0]
+            }
+
+    def update(self):
+        """Get the latest data from the Protect and updates the states."""
+        self.device.update()
